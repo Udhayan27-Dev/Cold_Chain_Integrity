@@ -280,9 +280,15 @@ function updateChart(labels, temperatures, alertFlags, data) {
                   pointHoverRadius: 8,
                   pointBorderWidth: 2,
                   pointBorderColor: '#ffffff',
-                  pointBackgroundColor: temperatures.map(temp => 
-                        (temp >= MIN_SAFE_TEMP && temp <= MAX_SAFE_TEMP) ? '#22c55e' : '#ef4444'
-                  ),
+                  pointBackgroundColor: temperatures.map(temp => {
+                        if (temp === MIN_SAFE_TEMP || temp === MAX_SAFE_TEMP) {
+                              return '#ff8c00'; // Orange for boundary temperatures (2°C or 8°C)
+                        } else if (temp > MIN_SAFE_TEMP && temp < MAX_SAFE_TEMP) {
+                              return '#22c55e'; // Green for safe range (between 2°C and 8°C)
+                        } else {
+                              return '#ef4444'; // Red for alerts (outside safe range)
+                        }
+                  }),
                   showLine: true,
                   pointHoverBorderWidth: 3,
                   pointHoverBorderColor: '#1e40af'
@@ -317,9 +323,15 @@ function updateChart(labels, temperatures, alertFlags, data) {
       if (chart && chart.data) {
             chart.data.labels = labels;
             chart.data.datasets[0].data = temperatures;
-            chart.data.datasets[0].pointBackgroundColor = temperatures.map(temp => 
-                  (temp >= MIN_SAFE_TEMP && temp <= MAX_SAFE_TEMP) ? '#22c55e' : '#ef4444'
-            );
+            chart.data.datasets[0].pointBackgroundColor = temperatures.map(temp => {
+                  if (temp === MIN_SAFE_TEMP || temp === MAX_SAFE_TEMP) {
+                        return '#ff8c00'; // Orange for boundary temperatures (2°C or 8°C)
+                  } else if (temp > MIN_SAFE_TEMP && temp < MAX_SAFE_TEMP) {
+                        return '#22c55e'; // Green for safe range (between 2°C and 8°C)
+                  } else {
+                        return '#ef4444'; // Red for alerts (outside safe range)
+                  }
+            });
             chart.data.datasets[0].label = `Live Blockchain Data (${data.length} blocks)`;
             
             // Update min/max temperature reference lines
@@ -400,12 +412,12 @@ function createNewChart(dataset, data) {
                         y: { 
                               type: 'linear',
                               beginAtZero: true,
-                              min: -1,
-                              max: 13,
+                              min: 0,
+                              max: 9,
                               ticks: {
-                                    stepSize: 2,
+                                    stepSize: 1,
                                     callback: function(value) {
-                                          if (value >= 0 && value <= 12) {
+                                          if (value >= 1 && value <= 8) {
                                                 const indicator = (value >= MIN_SAFE_TEMP && value <= MAX_SAFE_TEMP) ? 'SAFE' : 'ALERT';
                                                 return `${value}°C ${value === MIN_SAFE_TEMP || value === MAX_SAFE_TEMP ? `(${indicator})` : ''}`;
                                           }
