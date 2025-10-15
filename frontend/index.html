@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+      <meta charset="UTF-8">
+      <title>Vaccine Dashboard</title>
+      <link rel="stylesheet" href="style.css">
+      <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body>
+      <div class="container">
+            <header>
+                  <h1>Vaccine Temperature Dashboard</h1>
+                  <div class="safe-range">
+                        <span>Safe Range: 2°C - 8°C</span>
+                  </div>
+            </header>
+
+            <div class="controls">
+                  <label for="batch_no">Batch Number:</label>
+                  <input type="text" id="batch_no" value="VAC-000123">
+                  <button id="fetchBtn">Fetch Data</button>
+                  <div class="status" id="status">No data loaded</div>
+            </div>
+
+            <div class="dashboard">
+                  <div class="chart-section">
+                        <h2>Temperature History</h2>
+                        <div class="chart-wrapper">
+                              <canvas id="tempChart" width="800" height="400"></canvas>
+                        </div>
+                  </div>
+                  
+                  <div class="table-section">
+                        <h2>Temperature Records</h2>
+                        <div class="table-container">
+                              <table id="dataTable">
+                                    <thead>
+                                          <tr>
+                                                <th>Block#</th>
+                                                <th>Time</th>
+                                                <th>Temperature</th>
+                                                <th>Vaccine</th>
+                                                <th>Manufacturer</th>
+                                                <th>Location</th>
+                                                <th>Status</th>
+                                          </tr>
+                                    </thead>
+                                    <tbody>
+                                          <tr>
+                                                <td colspan="7">No data available</td>
+                                          </tr>
+                                    </tbody>
+                              </table>
+                        </div>
+                  </div>
+            </div>
+      </div>
+
+      <script src="script.js"></script>
+</body>
+
+</html>
