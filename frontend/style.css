@@ -408,3 +408,143 @@ tbody tr:hover {
             font-size: 0.85rem;
       }
 }
+
+/* Enhanced Modal styles for detailed payload view */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    backdrop-filter: blur(2px);
+}
+
+.modal-content {
+    background: white;
+    border-radius: 12px;
+    max-width: 90%;
+    max-height: 90%;
+    overflow-y: auto;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+    animation: modalSlideIn 0.3s ease-out;
+}
+
+@keyframes modalSlideIn {
+    from { opacity: 0; transform: scale(0.9); }
+    to { opacity: 1; transform: scale(1); }
+}
+
+.modal-header {
+    padding: 20px;
+    border-bottom: 2px solid #e5e7eb;
+    background: linear-gradient(135deg, #3b82f6, #1e40af);
+    color: white;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-radius: 12px 12px 0 0;
+}
+
+.modal-header h3 {
+    margin: 0;
+    font-size: 1.5rem;
+    font-weight: 600;
+}
+
+.close-btn {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 2rem;
+    cursor: pointer;
+    padding: 0;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    transition: background-color 0.2s;
+}
+
+.close-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.modal-body {
+    padding: 25px;
+}
+
+.modal-body h4 {
+    color: #374151;
+    margin: 20px 0 15px 0;
+    font-size: 1.1rem;
+    font-weight: 600;
+    border-left: 4px solid #3b82f6;
+    padding-left: 12px;
+}
+
+.detail-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.detail-item {
+    display: flex;
+    flex-direction: column;
+    padding: 12px;
+    background: #f9fafb;
+    border-radius: 8px;
+    border: 1px solid #e5e7eb;
+}
+
+.detail-item.full-width {
+    grid-column: span 2;
+}
+
+.detail-item label {
+    font-size: 0.9rem;
+    color: #6b7280;
+    margin-bottom: 4px;
+    font-weight: 500;
+}
+
+.detail-item span {
+    font-weight: 600;
+    color: #111827;
+    word-break: break-all;
+}
+
+.payload-json {
+    background: #1f2937;
+    color: #f9fafb;
+    padding: 15px;
+    border-radius: 8px;
+    font-family: 'Courier New', monospace;
+    font-size: 0.9rem;
+    white-space: pre-wrap;
+    overflow-x: auto;
+    border: 1px solid #374151;
+}
+
+.hash-section {
+    background: #f3f4f6;
+    padding: 15px;
+    border-radius: 8px;
+    border: 1px solid #d1d5db;
+}
+
+.hash-full {
+    font-family: 'Courier New', monospace;
+    font-size: 0.8rem;
+    color: #4b5563;
+    word-break: break-all;
+    background: #ffffff;
+    padding: 8px;
+    border-radius: 4px;
+    border: 1px solid #e5e7eb;
+}
