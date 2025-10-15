@@ -411,13 +411,13 @@ function createNewChart(dataset, data) {
                   scales: {
                         y: { 
                               type: 'linear',
-                              beginAtZero: true,
-                              min: 0,
-                              max: 9,
+                              beginAtZero: false,
+                              min: -2,
+                              max: 12,
                               ticks: {
                                     stepSize: 1,
                                     callback: function(value) {
-                                          if (value >= 1 && value <= 8) {
+                                          if (value >= -2 && value <= 12) {
                                                 const indicator = (value >= MIN_SAFE_TEMP && value <= MAX_SAFE_TEMP) ? 'SAFE' : 'ALERT';
                                                 return `${value}°C ${value === MIN_SAFE_TEMP || value === MAX_SAFE_TEMP ? `(${indicator})` : ''}`;
                                           }
