@@ -282,7 +282,7 @@ function updateChart(labels, temperatures, alertFlags, data) {
                   pointBorderColor: '#ffffff',
                   pointBackgroundColor: temperatures.map(temp => {
                         if (temp === MIN_SAFE_TEMP || temp === MAX_SAFE_TEMP) {
-                              return '#ff8c00'; // Orange for boundary temperatures (2°C or 8°C)
+                              return '#2563eb'; // Blue for boundary temperatures (2°C or 8°C)
                         } else if (temp > MIN_SAFE_TEMP && temp < MAX_SAFE_TEMP) {
                               return '#22c55e'; // Green for safe range (between 2°C and 8°C)
                         } else {
@@ -325,7 +325,7 @@ function updateChart(labels, temperatures, alertFlags, data) {
             chart.data.datasets[0].data = temperatures;
             chart.data.datasets[0].pointBackgroundColor = temperatures.map(temp => {
                   if (temp === MIN_SAFE_TEMP || temp === MAX_SAFE_TEMP) {
-                        return '#ff8c00'; // Orange for boundary temperatures (2°C or 8°C)
+                        return '#2563eb'; // Blue for boundary temperatures (2°C or 8°C)
                   } else if (temp > MIN_SAFE_TEMP && temp < MAX_SAFE_TEMP) {
                         return '#22c55e'; // Green for safe range (between 2°C and 8°C)
                   } else {

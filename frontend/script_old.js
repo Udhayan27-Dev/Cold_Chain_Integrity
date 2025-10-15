@@ -339,9 +339,15 @@ function updateChart(labels, temperatures, alertFlags, data) {
                   pointHoverRadius: 8,
                   pointBorderWidth: 2,
                   pointBorderColor: '#ffffff',
-                  pointBackgroundColor: alertFlags.map(alert => 
-                        alert ? '#ef4444' : '#22c55e'
-                  ),
+                  pointBackgroundColor: temperatures.map(temp => {
+                        if (temp === MIN_SAFE_TEMP || temp === MAX_SAFE_TEMP) {
+                              return '#2563eb'; // Blue for boundary temperatures (2°C or 8°C)
+                        } else if (temp > MIN_SAFE_TEMP && temp < MAX_SAFE_TEMP) {
+                              return '#22c55e'; // Green for safe range (between 2°C and 8°C)
+                        } else {
+                              return '#ef4444'; // Red for alerts (outside safe range)
+                        }
+                  }),
                   showLine: true,
                   pointHoverBorderWidth: 3,
                   pointHoverBorderColor: '#1e40af'
@@ -352,9 +358,15 @@ function updateChart(labels, temperatures, alertFlags, data) {
       if (chart && chart.data) {
             chart.data.labels = labels;
             chart.data.datasets[0].data = temperatures;
-            chart.data.datasets[0].pointBackgroundColor = alertFlags.map(alert => 
-                  alert ? '#ef4444' : '#22c55e'
-            );
+            chart.data.datasets[0].pointBackgroundColor = temperatures.map(temp => {
+                  if (temp === MIN_SAFE_TEMP || temp === MAX_SAFE_TEMP) {
+                        return '#2563eb'; // Blue for boundary temperatures (2°C or 8°C)
+                  } else if (temp > MIN_SAFE_TEMP && temp < MAX_SAFE_TEMP) {
+                        return '#22c55e'; // Green for safe range (between 2°C and 8°C)
+                  } else {
+                        return '#ef4444'; // Red for alerts (outside safe range)
+                  }
+            });
             chart.data.datasets[0].label = `Cold Chain Temperature Monitoring (${data.length} blocks)`;
             chart.update('none'); // Update without animation for real-time feel
       } else {
