@@ -1,0 +1,19 @@
+# Ignore Rust build output
+/target/
+
+# Ignore Cargo.lock for libraries (optional)
+# Uncomment if this is a library crate, not a binary app
+# Cargo.lock
+
+# Ignore backup and temporary files
+**/*.rs.bk
+*.swp
+*.swo
+
+# Ignore IDE/editor settings
+.vscode/
+.idea/
+.DS_Store
+
+# Ignore environment or secret files
+.env

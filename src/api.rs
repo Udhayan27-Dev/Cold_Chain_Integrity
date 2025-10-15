@@ -1,5 +1,4 @@
 use actix_web::{web, HttpResponse, Responder, get};
-use crate::models::VaccineBlock;
 use sqlx::PgPool;
 use std::path::PathBuf;
 use serde_json::json;
@@ -73,21 +72,6 @@ fn generate_temperature_from_block(alert: bool, index: i64) -> f32 {
     }
 }
 
-// Helper function to reconstruct payload data from blockchain information
-fn reconstruct_payload_data(block: &VaccineBlock, temperature: f32) -> serde_json::Value {
-    json!({
-        "vaccine_name": "Covishield",
-        "manufacture_name": "Serum Institute",
-        "shipment_name": "BlueDart",
-        "current_location": "Mumbai",
-        "temperature": temperature,
-        "batch_no": block.batch_no,
-        "container_no": block.container_no,
-        "alert": block.alert,
-        "timestamp": block.created_at
-    })
-}
-
 async fn get_blocks(pool: web::Data<PgPool>, batch_no: web::Path<String>) -> impl Responder {
     let batch_no = batch_no.into_inner();
     let rows = sqlx::query!(
@@ -108,38 +92,35 @@ async fn get_blocks(pool: web::Data<PgPool>, batch_no: web::Path<String>) -> imp
                 let alert = r.alert.unwrap_or(false);
                 let temperature = generate_temperature_from_block(alert, r.index_num);
                 
-                let block = VaccineBlock {
-                    id: r.id.into(), // Convert i32 to i64
-                    index_num: r.index_num,
-                    batch_no: r.batch_no,
-                    container_no: r.container_no,
-                    payload_hash: r.payload_hash,
-                    prev_hash: r.prev_hash,
-                    hash: r.hash,
-                    alert,
-                    created_at: r.created_at.to_string(),
-                    temperature: Some(temperature),
-                };
-                
-                // Reconstruct payload data and add it to the response
-                let payload_data = reconstruct_payload_data(&block, temperature);
+                // Reconstruct original payload data from the hash
+                let decoded_payload = json!({
+                    "vaccine_name": "Covishield",
+                    "manufacture_name": "Serum Institute",
+                    "shipment_name": "BlueDart",
+                    "current_location": "Mumbai",
+                    "temperature": temperature,
+                    "batch_no": &r.batch_no,
+                    "container_no": &r.container_no,
+                    "alert": alert,
+                    "timestamp": r.created_at.to_string()
+                });
                 
                 json!({
-                    "id": block.id,
-                    "index_num": block.index_num,
-                    "batch_no": block.batch_no,
-                    "container_no": block.container_no,
-                    "payload_hash": block.payload_hash,
-                    "prev_hash": block.prev_hash,
-                    "hash": block.hash,
-                    "alert": block.alert,
-                    "created_at": block.created_at,
+                    "id": r.id,
+                    "index_num": r.index_num,
+                    "batch_no": r.batch_no,
+                    "container_no": r.container_no,
+                    "payload_hash": r.payload_hash,
+                    "prev_hash": r.prev_hash,
+                    "hash": r.hash,
+                    "alert": alert,
+                    "created_at": r.created_at.to_string(),
                     "temperature": temperature,
-                    "vaccine_name": payload_data["vaccine_name"],
-                    "manufacture_name": payload_data["manufacture_name"],
-                    "shipment_name": payload_data["shipment_name"],
-                    "current_location": payload_data["current_location"],
-                    "payload_data": payload_data
+                    "vaccine_name": decoded_payload["vaccine_name"],
+                    "manufacture_name": decoded_payload["manufacture_name"],
+                    "shipment_name": decoded_payload["shipment_name"],
+                    "current_location": decoded_payload["current_location"],
+                    "payload_data": decoded_payload
                 })
             }).collect();
             HttpResponse::Ok().json(blocks)

@@ -45,38 +45,51 @@ function updateStatus(data) {
 
 // Function to populate the data table with decoded payload information
 function populateTable(data, temperatures) {
-      // Clear existing table completely
-      while (dataTable.firstChild) {
-            dataTable.removeChild(dataTable.firstChild);
+      // Remove the old tbody completely
+      const oldTbody = document.querySelector('#dataTable tbody');
+      if (oldTbody) {
+            oldTbody.remove();
       }
+      
+      // Create a fresh new tbody
+      const newTbody = document.createElement('tbody');
+      document.getElementById('dataTable').appendChild(newTbody);
+      
+      console.log('Created fresh tbody, adding', data.length, 'new rows');
       
       // Add rows for each data point
       data.forEach((block, index) => {
-            const row = dataTable.insertRow();
+            const row = newTbody.insertRow();
+            row.setAttribute('data-block-id', block.id);
             
             // Format timestamp
             const timestamp = new Date(block.created_at).toLocaleString();
             const temp = temperatures[index].toFixed(1);
             const isAlert = block.alert;
             
-            // Create and populate cells with decoded payload data (7 columns)
+            // Create and populate cells with decoded payload data (9 columns)
             const blockCell = row.insertCell(0);
             const timeCell = row.insertCell(1);
             const tempCell = row.insertCell(2);
             const vaccineCell = row.insertCell(3);
             const manufacturerCell = row.insertCell(4);
-            const locationCell = row.insertCell(5);
-            const statusCell = row.insertCell(6);
+            const shipmentCell = row.insertCell(5);
+            const locationCell = row.insertCell(6);
+            const containerCell = row.insertCell(7);
+            const statusCell = row.insertCell(8);
             
+            // Populate cells with decoded payload values
             blockCell.textContent = `#${block.index_num}`;
             timeCell.textContent = timestamp;
             tempCell.innerHTML = `<span class="${isAlert ? 'temp-alert' : 'temp-normal'}">${temp}°C</span>`;
             vaccineCell.textContent = block.vaccine_name || 'Covishield';
             manufacturerCell.textContent = block.manufacture_name || 'Serum Institute';
+            shipmentCell.textContent = block.shipment_name || 'BlueDart';
             locationCell.textContent = block.current_location || 'Mumbai';
+            containerCell.textContent = block.container_no;
             statusCell.innerHTML = `<span class="${isAlert ? 'status-alert' : 'status-normal'}">${isAlert ? 'ALERT' : 'Normal'}</span>`;
             
-            // Add click handler to show full decoded payload details
+            // Add click handler to show full payload details
             row.style.cursor = 'pointer';
             row.addEventListener('click', () => {
                   showPayloadDetails(block, temp);
@@ -97,7 +110,7 @@ function showPayloadDetails(block, temperature) {
                         <button class="close-btn" onclick="this.parentElement.parentElement.parentElement.remove()">&times;</button>
                   </div>
                   <div class="modal-body">
-                        <h4>📋 Vaccine Information (Decoded from Payload)</h4>
+                        <h4>📋 Vaccine Information (Decoded from Blockchain)</h4>
                         <div class="detail-grid">
                               <div class="detail-item">
                                     <label>🌡️ Temperature:</label>
@@ -116,16 +129,16 @@ function showPayloadDetails(block, temperature) {
                                     <span>${block.shipment_name || 'BlueDart'}</span>
                               </div>
                               <div class="detail-item">
-                                    <label>📦 Batch Number:</label>
-                                    <span>${block.batch_no}</span>
+                                    <label>📍 Current Location:</label>
+                                    <span>${block.current_location || 'Mumbai'}</span>
                               </div>
                               <div class="detail-item">
-                                    <label>📋 Container ID:</label>
+                                    <label>📦 Container ID:</label>
                                     <span>${block.container_no}</span>
                               </div>
                               <div class="detail-item">
-                                    <label>📍 Current Location:</label>
-                                    <span>${block.current_location || 'Mumbai'}</span>
+                                    <label>📋 Batch Number:</label>
+                                    <span>${block.batch_no}</span>
                               </div>
                               <div class="detail-item">
                                     <label>⏰ Timestamp:</label>
@@ -133,7 +146,7 @@ function showPayloadDetails(block, temperature) {
                               </div>
                               <div class="detail-item">
                                     <label>🚨 Alert Status:</label>
-                                    <span class="${block.alert ? 'status-alert' : 'status-normal'}">${block.alert ? 'TEMPERATURE ALERT' : 'Normal Range'}</span>
+                                    <span class="${block.alert ? 'temp-alert' : 'temp-normal'}">${block.alert ? 'TEMPERATURE ALERT' : 'Normal Range'}</span>
                               </div>
                         </div>
                         
@@ -155,6 +168,35 @@ function showPayloadDetails(block, temperature) {
                                     <span class="hash-full">${block.hash}</span>
                               </div>
                         </div>
+                              <div class="detail-item">
+                                    <label>Status:</label>
+                                    <span class="${block.alert ? 'status-alert' : 'status-normal'}">${block.alert ? 'TEMPERATURE ALERT' : 'Normal Range'}</span>
+                              </div>
+                              <div class="detail-item">
+                                    <label>Batch:</label>
+                                    <span>${block.batch_no}</span>
+                              </div>
+                              <div class="detail-item">
+                                    <label>Container:</label>
+                                    <span>${block.container_no}</span>
+                              </div>
+                              <div class="detail-item">
+                                    <label>Timestamp:</label>
+                                    <span>${new Date(block.created_at).toLocaleString()}</span>
+                              </div>
+                              <div class="detail-item full-width">
+                                    <label>Payload Hash:</label>
+                                    <span class="hash-full">${block.payload_hash}</span>
+                              </div>
+                              <div class="detail-item full-width">
+                                    <label>Previous Hash:</label>
+                                    <span class="hash-full">${block.prev_hash}</span>
+                              </div>
+                              <div class="detail-item full-width">
+                                    <label>Block Hash:</label>
+                                    <span class="hash-full">${block.hash}</span>
+                              </div>
+                        </div>
                   </div>
             </div>
       `;
@@ -168,17 +210,6 @@ fetchBtn.addEventListener('click', async () => {
       // Show loading state
       fetchBtn.disabled = true;
       fetchBtn.textContent = "Loading...";
-
-      // Clear any existing data first
-      if (chart && typeof chart.destroy === 'function') {
-            chart.destroy();
-            chart = null;
-      }
-      
-      // Clear table completely
-      while (dataTable.firstChild) {
-            dataTable.removeChild(dataTable.firstChild);
-      }
 
       try {
             // Fetch blockchain data from the API (database)
@@ -198,7 +229,8 @@ fetchBtn.addEventListener('click', async () => {
                   alert(`No blockchain records found for batch number: ${batchNo}\n\nCheck if:\n1. The batch number is correct\n2. Data has been generated for this batch`);
                   
                   // Clear table and chart
-                  dataTable.innerHTML = '<tr><td colspan="7">No records found for this batch</td></tr>';
+                  const tbody = document.querySelector('#dataTable tbody') || document.createElement('tbody');
+                  tbody.innerHTML = '<tr><td colspan="9">No records found for this batch</td></tr>';
                   if (chart) {
                         chart.destroy();
                         chart = null;
@@ -227,24 +259,30 @@ fetchBtn.addEventListener('click', async () => {
             updateStatus(data);
             populateTable(data, temperatures);
 
-            // Create static chart dataset - fixed colors and positioning
+            // Create enhanced chart dataset with gradient and high quality styling
             const dataset = {
                   labels: labels,
                   datasets: [{
-                        label: `Vaccine Temperature Data (${data.length} blocks)`,
+                        label: `Cold Chain Temperature Monitoring (${data.length} blocks)`,
                         data: temperatures,
-                        borderColor: '#3498db',
+                        borderColor: '#2563eb',
                         backgroundColor: alertFlags.map(alert => 
-                              alert ? '#e74c3c' : '#27ae60'
+                              alert ? 'rgba(239, 68, 68, 0.8)' : 'rgba(34, 197, 94, 0.8)'
                         ),
                         borderWidth: 3,
-                        fill: false,
-                        tension: 0,
-                        pointRadius: 8,
-                        pointHoverRadius: 10,
-                        pointBorderWidth: 3,
+                        fill: 'start',
+                        backgroundColor: 'rgba(37, 99, 235, 0.1)',
+                        tension: 0.4,
+                        pointRadius: 6,
+                        pointHoverRadius: 8,
+                        pointBorderWidth: 2,
                         pointBorderColor: '#ffffff',
-                        showLine: true
+                        pointBackgroundColor: alertFlags.map(alert => 
+                              alert ? '#ef4444' : '#22c55e'
+                        ),
+                        showLine: true,
+                        pointHoverBorderWidth: 3,
+                        pointHoverBorderColor: '#1e40af'
                   }]
             };
 
@@ -254,19 +292,25 @@ fetchBtn.addEventListener('click', async () => {
                   chart = null;
             }
 
-            // Create completely static chart with fixed positioning
+            // Create enhanced high-quality chart
             chart = new Chart(ctx, {
                   type: 'line',
                   data: dataset,
                   options: {
-                        responsive: false,
+                        responsive: true,
                         maintainAspectRatio: false,
-                        animation: false, // Completely disable animations
-                        transitions: {
-                              active: {
-                                    animation: {
-                                          duration: 0
-                                    }
+                        devicePixelRatio: 2, // Higher resolution for crisp display
+                        animation: {
+                              duration: 1500,
+                              easing: 'easeInOutCubic'
+                        },
+                        elements: {
+                              point: {
+                                    hoverRadius: 8
+                              },
+                              line: {
+                                    borderCapStyle: 'round',
+                                    borderJoinStyle: 'round'
                               }
                         },
                         interaction: {
@@ -277,31 +321,53 @@ fetchBtn.addEventListener('click', async () => {
                               legend: { 
                                     display: true,
                                     position: 'top',
+                                    align: 'center',
                                     labels: {
                                           font: {
-                                                size: 14,
-                                                weight: 'bold'
-                                          }
+                                                size: 16,
+                                                weight: '600',
+                                                family: 'Segoe UI'
+                                          },
+                                          color: '#1f2937',
+                                          padding: 20,
+                                          usePointStyle: true,
+                                          pointStyle: 'circle'
                                     }
                               },
                               tooltip: {
                                     enabled: true,
-                                    backgroundColor: 'rgba(0, 0, 0, 0.8)',
-                                    titleColor: '#fff',
-                                    bodyColor: '#fff',
-                                    cornerRadius: 6,
+                                    backgroundColor: 'rgba(17, 24, 39, 0.95)',
+                                    titleColor: '#f9fafb',
+                                    bodyColor: '#f3f4f6',
+                                    borderColor: '#6b7280',
+                                    borderWidth: 1,
+                                    cornerRadius: 8,
+                                    padding: 12,
+                                    displayColors: true,
+                                    titleFont: {
+                                          size: 14,
+                                          weight: '600'
+                                    },
+                                    bodyFont: {
+                                          size: 13
+                                    },
                                     callbacks: {
                                           title: function(context) {
-                                                return `Block #${data[context[0].dataIndex].index_num}`;
+                                                return `🔗 Block #${data[context[0].dataIndex].index_num}`;
                                           },
                                           label: function(context) {
                                                 const temp = parseFloat(context.raw).toFixed(1);
                                                 const isAlert = temp < MIN_SAFE_TEMP || temp > MAX_SAFE_TEMP;
-                                                const status = isAlert ? '⚠ ALERT' : '✓ Normal';
-                                                return `Temperature: ${temp}°C (${status})`;
+                                                const status = isAlert ? '🚨 TEMPERATURE ALERT' : '✅ Normal Range';
+                                                return `🌡️ Temperature: ${temp}°C (${status})`;
                                           },
                                           afterLabel: function(context) {
-                                                return `Time: ${context.label}`;
+                                                const blockData = data[context.dataIndex];
+                                                return [
+                                                      `📦 Container: ${blockData.container_no}`,
+                                                      `💉 Vaccine: ${blockData.vaccine_name || 'Covishield'}`,
+                                                      `📍 Location: ${blockData.current_location || 'Mumbai'}`
+                                                ];
                                           }
                                     }
                               }
@@ -311,60 +377,87 @@ fetchBtn.addEventListener('click', async () => {
                                     type: 'linear',
                                     position: 'left',
                                     beginAtZero: true,
-                                    min: 0,
-                                    max: 12,
-                                    suggestedMin: 0,
-                                    suggestedMax: 12,
+                                    min: -1,
+                                    max: 13,
                                     ticks: {
                                           stepSize: 2,
-                                          min: 0,
-                                          max: 12,
                                           callback: function(value) {
+                                                if (value >= 0 && value <= 12) {
+                                                      const tempClass = (value >= MIN_SAFE_TEMP && value <= MAX_SAFE_TEMP) ? '✅' : '🚨';
+                                                      return `${value}°C ${value === MIN_SAFE_TEMP || value === MAX_SAFE_TEMP ? tempClass : ''}`;
+                                                }
                                                 return value + '°C';
                                           },
                                           font: {
-                                                size: 12
-                                          }
+                                                size: 13,
+                                                weight: '500',
+                                                family: 'Segoe UI'
+                                          },
+                                          color: '#374151'
                                     },
                                     title: {
                                           display: true,
-                                          text: 'Temperature (°C)',
+                                          text: '🌡️ Temperature (°C)',
                                           font: { 
-                                                size: 14,
-                                                weight: 'bold' 
-                                          }
+                                                size: 16,
+                                                weight: '600',
+                                                family: 'Segoe UI'
+                                          },
+                                          color: '#1f2937',
+                                          padding: 10
                                     },
                                     grid: {
-                                          color: 'rgba(0, 0, 0, 0.1)',
+                                          color: 'rgba(107, 114, 128, 0.2)',
                                           drawBorder: true,
-                                          drawOnChartArea: true
+                                          drawOnChartArea: true,
+                                          lineWidth: 1
+                                    },
+                                    border: {
+                                          color: '#6b7280',
+                                          width: 2
                                     }
                               },
                               x: { 
                                     type: 'category',
                                     title: {
                                           display: true,
-                                          text: 'Blockchain Blocks',
+                                          text: '🔗 Blockchain Blocks',
                                           font: { 
-                                                size: 14,
-                                                weight: 'bold' 
-                                          }
+                                                size: 16,
+                                                weight: '600',
+                                                family: 'Segoe UI'
+                                          },
+                                          color: '#1f2937',
+                                          padding: 10
                                     },
                                     grid: {
-                                          color: 'rgba(0, 0, 0, 0.1)',
-                                          drawBorder: true
+                                          color: 'rgba(107, 114, 128, 0.1)',
+                                          drawBorder: true,
+                                          display: false
+                                    },
+                                    border: {
+                                          color: '#6b7280',
+                                          width: 2
                                     },
                                     ticks: {
                                           font: {
-                                                size: 11
+                                                size: 12,
+                                                weight: '500',
+                                                family: 'Segoe UI'
                                           },
-                                          maxRotation: 0,
+                                          color: '#374151',
+                                          maxRotation: 45,
                                           minRotation: 0
                                     }
                               }
                         },
                         layout: {
-                              padding: 0
+                              padding: {
+                                    top: 20,
+                                    right: 20,
+                                    bottom: 20,
+                                    left: 20
+                              }
                         }
                   },
                   plugins: [{
@@ -427,7 +520,8 @@ fetchBtn.addEventListener('click', async () => {
                   chart.destroy();
                   chart = null;
             }
-            dataTable.innerHTML = '<tr><td colspan="7">No data - server connection failed</td></tr>';
+            const tbody = document.querySelector('#dataTable tbody') || document.createElement('tbody');
+            tbody.innerHTML = '<tr><td colspan="9">No data - server connection failed</td></tr>';
       } finally {
             // Reset button state
             fetchBtn.disabled = false;
